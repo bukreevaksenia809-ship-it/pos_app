@@ -1,0 +1,101 @@
+// lib/services/printer_test.dart
+import 'dart:typed_data';
+import 'package:flutter_libserialport/flutter_libserialport.dart';
+
+class PrinterTest {
+  static const Map<int, int> cp866 = {
+    0x0410: 0x80, 0x0411: 0x81, 0x0412: 0x82, 0x0413: 0x83,
+    0x0414: 0x84, 0x0415: 0x85, 0x0416: 0x86, 0x0417: 0x87,
+    0x0418: 0x88, 0x0419: 0x89, 0x041A: 0x8A, 0x041B: 0x8B,
+    0x041C: 0x8C, 0x041D: 0x8D, 0x041E: 0x8E, 0x041F: 0x8F,
+    0x0420: 0x90, 0x0421: 0x91, 0x0422: 0x92, 0x0423: 0x93,
+    0x0424: 0x94, 0x0425: 0x95, 0x0426: 0x96, 0x0427: 0x97,
+    0x0428: 0x98, 0x0429: 0x99, 0x042A: 0x9A, 0x042B: 0x9B,
+    0x042C: 0x9C, 0x042D: 0x9D, 0x042E: 0x9E, 0x042F: 0x9F,
+    0x0430: 0xA0, 0x0431: 0xA1, 0x0432: 0xA2, 0x0433: 0xA3,
+    0x0434: 0xA4, 0x0435: 0xA5, 0x0436: 0xA6, 0x0437: 0xA7,
+    0x0438: 0xA8, 0x0439: 0xA9, 0x043A: 0xAA, 0x043B: 0xAB,
+    0x043C: 0xAC, 0x043D: 0xAD, 0x043E: 0xAE, 0x043F: 0xAF,
+    0x0440: 0xB0, 0x0441: 0xB1, 0x0442: 0xB2, 0x0443: 0xB3,
+    0x0444: 0xB4, 0x0445: 0xB5, 0x0446: 0xB6, 0x0447: 0xB7,
+    0x0448: 0xB8, 0x0449: 0xB9, 0x044A: 0xBA, 0x044B: 0xBB,
+    0x044C: 0xBC, 0x044D: 0xBD, 0x044E: 0xBE, 0x044F: 0xBF,
+    0x0401: 0xF0, 0x0451: 0xF1,
+  };
+
+  static Uint8List textToCp866(String text) {
+    final bytes = <int>[];
+    for (int i = 0; i < text.length; i++) {
+      final code = text.codeUnitAt(i);
+      if (code < 128) {
+        bytes.add(code);
+      } else {
+        bytes.add(cp866[code] ?? 0x3F);
+      }
+    }
+    return Uint8List.fromList(bytes);
+  }
+
+  static Future<void> testCodes(String portName) async {
+    print('🧪 ТЕСТ КОДОВ СТРАНИЦ ДЛЯ CP866');
+    print('=' * 50);
+    
+    final port = SerialPort(portName);
+    port.config
+      ..baudRate = 19200
+      ..bits = 8
+      ..stopBits = 1
+      ..parity = SerialPortParity.none;
+    
+    if (!port.openReadWrite()) {
+      print('❌ Не удалось открыть порт $portName');
+      return;
+    }
+    
+    print('✅ Порт открыт');
+    
+    // Тестируем разные коды страниц
+    final testText = 'АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ\nабвгдеёжзийклмнопрстуфхцчшщъыьэюя\n';
+    final testBytes = textToCp866(testText);
+    
+    final codes = [
+      0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
+      0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F,
+      0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17,
+      0x18, 0x19, 0x1A, 0x1B, 0x1C, 0x1D, 0x1E, 0x1F,
+    ];
+    
+    for (final code in codes) {
+      print('📝 Тест кода: 0x${code.toRadixString(16).padLeft(2, '0')}');
+      
+      // Сброс
+      port.write(Uint8List.fromList([0x1B, 0x40]));
+      await Future.delayed(Duration(milliseconds: 50));
+      
+      // Устанавливаем код страницы
+      port.write(Uint8List.fromList([0x1B, 0x52, code]));
+      await Future.delayed(Duration(milliseconds: 50));
+      
+      // Пишем заголовок
+      final header = '=== КОД ${code.toRadixString(16).padLeft(2, '0')} ===\n';
+      port.write(textToCp866(header));
+      
+      // Пишем тестовый текст
+      port.write(testBytes);
+      
+      // Разделитель
+      port.write(textToCp866('-' * 30 + '\n\n'));
+      
+      await Future.delayed(Duration(milliseconds: 200));
+    }
+    
+    // Обрезка бумаги
+    port.write(Uint8List.fromList([0x1D, 0x56, 0x00]));
+    await Future.delayed(Duration(milliseconds: 500));
+    
+    port.close();
+    print('✅ Все тесты отправлены!');
+    print('=' * 50);
+    print('📸 Сделай фото чека и скажи какой код показал нормальные русские буквы!');
+  }
+}

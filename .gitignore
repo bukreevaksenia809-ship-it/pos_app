@@ -1,0 +1,15 @@
+*.pyc
+__pycache__/
+printer_env/
+.DS_Store
+build/
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+pubspec.lock
+*.swp
+*.swo
+macos/Pods/
+windows/
+linux/
