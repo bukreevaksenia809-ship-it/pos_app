@@ -13,7 +13,7 @@ dependencies:
   # База данных
   sqflite: ^2.3.0
   path_provider: ^2.1.0
-  path: ^1.8.3  # <--- ИЗМЕНЕНО на 1.8.3
+  path: ^1.8.3
   
   # Состояние
   provider: ^6.0.5
@@ -39,9 +39,9 @@ dependencies:
   # Графики
   fl_chart: ^0.68.0
   
-  # Google Sheets API
-  googleapis: ^13.2.0
-  googleapis_auth: ^1.6.0
+  # Google Sheets API - понижаем версию
+  googleapis: ^12.0.0
+  googleapis_auth: ^1.5.0
 
 dev_dependencies:
   flutter_test:
