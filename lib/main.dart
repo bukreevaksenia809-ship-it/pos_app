@@ -11,20 +11,16 @@ import 'package:pos_app/screens/summary_screen.dart';
 import 'package:pos_app/screens/importer_screen.dart';
 import 'package:pos_app/services/database/database_helper.dart';
 import 'package:pos_app/theme/app_theme.dart';
-import 'package:pos_app/test_simple_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
   final prefs = await SharedPreferences.getInstance();
   final isDark = prefs.getBool('isDarkTheme') ?? false;
-  
   try {
     await DatabaseHelper().database;
   } catch (e) {
     print('❌ Ошибка БД: $e');
   }
-  
   runApp(MyApp(isDark: isDark));
 }
 
@@ -55,7 +51,6 @@ class MyApp extends StatelessWidget {
               '/add_product': (context) => AddProductScreen(),
               '/summary': (context) => const SummaryScreen(),
               '/importer': (context) => const ImporterScreen(),
-              '/test': (context) => const TestSimplePage(),
             },
           );
         },

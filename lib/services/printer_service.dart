@@ -20,18 +20,15 @@ class PrinterService {
     String? port,
   }) async {
     try {
-      // Определяем путь к скрипту
       final scriptDir = Directory.current.path;
       String scriptPath;
       String pythonPath;
       
       if (Platform.isWindows) {
-        // На Windows используем python из PATH
         scriptPath = '$scriptDir\\scripts\\print_receipt.py';
         pythonPath = 'python';
       } else {
         scriptPath = '$scriptDir/scripts/print_receipt.py';
-        // На macOS пробуем venv
         final venvPath = '$scriptDir/printer_env/bin/python3';
         pythonPath = await File(venvPath).exists() ? venvPath : 'python3';
       }
@@ -41,7 +38,6 @@ class PrinterService {
         return false;
       }
 
-      // Формируем данные
       final itemsData = items.map((item) => {
         'name': item.name,
         'price': item.price,
@@ -76,9 +72,6 @@ class PrinterService {
         [scriptPath, jsonData],
         runInShell: Platform.isWindows,
       );
-
-      print('📊 exitCode: ${result.exitCode}');
-      print('📤 stdout: ${result.stdout}');
 
       if (result.exitCode == 0) {
         try {
