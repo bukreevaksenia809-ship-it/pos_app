@@ -7,39 +7,39 @@ on:
 
 jobs:
   build-windows:
-    runs-on: windows-2022  # <--- ИЗМЕНЕНО на windows-2022
+    runs-on: windows-2022
     
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
       
-      # Устанавливаем Flutter
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
           flutter-version: '3.24.0'
           channel: 'stable'
       
-      # Включаем Windows Desktop
       - name: Enable Windows Desktop
         run: flutter config --enable-windows-desktop
       
-      # Создаем Windows проект
       - name: Add Windows support
         run: flutter create --platforms=windows .
       
-      # Получаем зависимости
       - name: Get dependencies
         run: flutter pub get
       
-      # Копируем Python скрипты
-      - name: Copy scripts
+      - name: Build Windows Release
+        run: flutter build windows --release
+      
+      - name: List build files
+        run: dir build\windows\runner\Release\ /s
+      
+      - name: Copy scripts to Release
         run: |
-          mkdir -p build/windows/runner/Release/scripts
+          mkdir build\windows\runner\Release\scripts
           copy scripts\print_receipt.py build\windows\runner\Release\scripts\
           copy scripts\install_deps.bat build\windows\runner\Release\scripts\
       
-      # Создаем README
       - name: Create README
         run: |
           echo "POS App - Кассовое приложение" > build\windows\runner\Release\README.txt
@@ -51,11 +51,6 @@ jobs:
           echo "3. Установите драйвер для USB-to-Serial (CH340/CH341)" >> build\windows\runner\Release\README.txt
           echo "4. Запускайте от имени администратора" >> build\windows\runner\Release\README.txt
       
-      # Собираем Windows приложение
-      - name: Build Windows Release
-        run: flutter build windows --release
-      
-      # Загружаем результат
       - name: Upload Windows Build
         uses: actions/upload-artifact@v4
         with:
