@@ -10,37 +10,42 @@ jobs:
     runs-on: windows-latest
     
     steps:
-      # 1. Клонируем код
       - name: Checkout code
         uses: actions/checkout@v4
       
-      # 2. Устанавливаем Flutter
+      # Устанавливаем Visual Studio Build Tools
+      - name: Setup Visual Studio
+        uses: microsoft/setup-msbuild@v2
+        with:
+          vs-version: '17.0'
+      
+      # Устанавливаем Flutter
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
           flutter-version: '3.24.0'
           channel: 'stable'
       
-      # 3. Включаем Windows Desktop
+      # Включаем Windows Desktop
       - name: Enable Windows Desktop
         run: flutter config --enable-windows-desktop
       
-      # 4. Создаем Windows проект
+      # Создаем Windows проект
       - name: Add Windows support
         run: flutter create --platforms=windows .
       
-      # 5. Получаем зависимости
+      # Получаем зависимости
       - name: Get dependencies
         run: flutter pub get
       
-      # 6. Копируем Python скрипты в нужное место
+      # Копируем Python скрипты
       - name: Copy scripts
         run: |
           mkdir -p build/windows/runner/Release/scripts
           copy scripts\print_receipt.py build\windows\runner\Release\scripts\
           copy scripts\install_deps.bat build\windows\runner\Release\scripts\
       
-      # 7. Создаем README для пользователей
+      # Создаем README
       - name: Create README
         run: |
           echo "POS App - Кассовое приложение" > build\windows\runner\Release\README.txt
@@ -50,12 +55,13 @@ jobs:
           echo "1. Установите Python с https://python.org" >> build\windows\runner\Release\README.txt
           echo "2. Установите pyserial: python -m pip install pyserial" >> build\windows\runner\Release\README.txt
           echo "3. Установите драйвер для USB-to-Serial (CH340/CH341)" >> build\windows\runner\Release\README.txt
+          echo "4. Запускайте от имени администратора" >> build\windows\runner\Release\README.txt
       
-      # 8. Собираем Windows приложение
+      # Собираем Windows приложение
       - name: Build Windows Release
         run: flutter build windows --release
       
-      # 9. Загружаем результат
+      # Загружаем результат
       - name: Upload Windows Build
         uses: actions/upload-artifact@v4
         with:
