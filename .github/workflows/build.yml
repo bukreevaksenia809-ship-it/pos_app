@@ -9,14 +9,24 @@ jobs:
   build-windows:
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
+      
       - uses: subosito/flutter-action@v2
         with:
           flutter-version: '3.16.0'
-      - run: flutter config --enable-windows-desktop
-      - run: flutter pub get
-      - run: flutter build windows --release
-      - uses: actions/upload-artifact@v3
+          channel: 'stable'
+      
+      - name: Enable Windows Desktop
+        run: flutter config --enable-windows-desktop
+      
+      - name: Get dependencies
+        run: flutter pub get
+      
+      - name: Build Windows Release
+        run: flutter build windows --release
+      
+      - name: Upload Windows Build
+        uses: actions/upload-artifact@v4
         with:
           name: pos-app-windows
           path: build/windows/runner/Release/
