@@ -29,18 +29,37 @@ jobs:
         run: flutter pub get
       
       - name: Build Windows Release
-        run: flutter build windows --release
+        id: build
+        continue-on-error: true
+        run: flutter build windows --release -v
       
-      - name: List build files
-        run: dir build\windows\runner\Release\ /s
+      - name: Check build status
+        if: steps.build.outcome == 'failure'
+        run: |
+          echo "❌ Сборка не удалась!"
+          echo "Смотри логи выше для деталей"
+          exit 1
+      
+      - name: Check Release folder
+        if: steps.build.outcome == 'success'
+        run: |
+          if (Test-Path "build\windows\runner\Release\") {
+            dir build\windows\runner\Release\
+          } else {
+            echo "❌ Папка Release не найдена!"
+            dir build\windows\runner\
+            exit 1
+          }
       
       - name: Copy scripts to Release
+        if: steps.build.outcome == 'success'
         run: |
-          mkdir build\windows\runner\Release\scripts
+          mkdir build\windows\runner\Release\scripts -Force
           copy scripts\print_receipt.py build\windows\runner\Release\scripts\
           copy scripts\install_deps.bat build\windows\runner\Release\scripts\
       
       - name: Create README
+        if: steps.build.outcome == 'success'
         run: |
           echo "POS App - Кассовое приложение" > build\windows\runner\Release\README.txt
           echo "=====================================" >> build\windows\runner\Release\README.txt
@@ -52,7 +71,15 @@ jobs:
           echo "4. Запускайте от имени администратора" >> build\windows\runner\Release\README.txt
       
       - name: Upload Windows Build
+        if: steps.build.outcome == 'success'
         uses: actions/upload-artifact@v4
         with:
           name: pos-app-windows
           path: build/windows/runner/Release/
+      
+      - name: Upload build logs on failure
+        if: steps.build.outcome == 'failure'
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-logs
+          path: build/
