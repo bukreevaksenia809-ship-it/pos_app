@@ -39,7 +39,7 @@ dependencies:
   # Графики
   fl_chart: ^0.68.0
   
-  # Google Sheets API - понижаем версию
+  # Google Sheets API
   googleapis: ^12.0.0
   googleapis_auth: ^1.5.0
 
