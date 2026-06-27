@@ -7,17 +7,11 @@ on:
 
 jobs:
   build-windows:
-    runs-on: windows-latest
+    runs-on: windows-2022  # <--- ИЗМЕНЕНО на windows-2022
     
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      
-      # Устанавливаем Visual Studio Build Tools
-      - name: Setup Visual Studio
-        uses: microsoft/setup-msbuild@v2
-        with:
-          vs-version: '17.0'
       
       # Устанавливаем Flutter
       - name: Setup Flutter
